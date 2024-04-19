@@ -1,9 +1,10 @@
 //AutoMonLandscapeThingSpeakSeparateFieldsDraft
 //Date Modified & Created: 8 April 2024 From Sketch REMETAutoMonLandscapeThingSpeakVer1Fixes
-//Dates Revised: April 15, 2024
+//Dates Revised: April 18, 2024
 //Goals: Separate the data fields and graphs for battery level and node info (8April2024); Have a decimal place reflected in ThingSpeak for the battery level & improve its reading accuracy
 //Progress Made: Able to create new separate variable for the battery level data (8April2024); Able to separate & print three data; able to separate the fields for water & battery level(12April2024); 
-// able to have three separate data fields for water level, battery level & node ID but the battery level decimal place did not appear; able to display graphs for water & battery level (15April2024)
+// able to have three separate data fields for water level, battery level & node ID but the battery level decimal place did not appear; able to display graphs for water & battery level (15April2024); 
+//Able to change the buf variable for node ID to buf3
 //Limitations: The battery level data has no decimal place yet in ThingSpeak and there's reading battery issue (15April2024)
 //Modified and Developed by: Stephen Brix L. Racal, Asst. Scientist - Electronics Engineering, Computer Science & Instrumentation
 //Original Sketch Developed by Freaklabs & IRRI, Philippines
@@ -12,6 +13,7 @@
 #include "EasyLink.h"
 #include <CmdGateway.h>
 #include <stdio.h>
+#include <string.h> //16April2024
 #include <stdlib.h> //15April2024 needed for atoi & atof functions
 #include "float.h" //15April2024
 #include <math.h>  //15April2024
@@ -149,6 +151,7 @@ uint8_t thisAddr[8];
 char buf[BUF_SZ];
 char buf1[BUF_SZ]; //11April2024
 char buf2[BUF_SZ];//8April2024
+char buf3[BUF_SZ];//18April2024
 uint8_t pktIndex = 0;
 
 
@@ -380,7 +383,7 @@ void loop()
             sprintf(buf1, "%s\n",pktText[1]);//11April2024 changed format specifier from %s 12April2024
            // sprintf(buf1, "%d\n",pktText[1]);//12April2024 
             sprintf(buf2, "%s\n", pktText2[1]);//11April2024 removed pktText2[0] and data is still read; changed format specifier from %s 12April2024
-            sprintf(buf, "%s\n", pktText3[1]);//11April2024 changed format specifier from %s 12April2024
+            sprintf(buf3, "%s\n", pktText3[1]);//11April2024 changed format specifier from %s 12April2024
 
 //              float x = atoi(buf1); //12April2024
 //              float y = atoi(buf2);//12April2024
@@ -389,7 +392,7 @@ void loop()
            // spiuart.print(pktText[1]);//12April2024;
             //int x, y, z;
             
-            spiuart.print(buf); //11April2024
+            spiuart.print(buf3); //11April2024
             spiuart.print(buf2); //11April2024
             spiuart.print(buf1);//8April2024
 
@@ -405,7 +408,7 @@ void loop()
             //if (smsSend1(buf1))
             //if (smsSend(buf))
            // if (smsSend(buf1)&& smsSend(buf2)&& smsSend(buf))//8April2024 &  12April2024 multiple conditions
-            if (smsSend(buf)|| smsSend(buf2)|| smsSend(buf1))//12April2024 multiple conditions
+            if (smsSend(buf3)|| smsSend(buf2)|| smsSend(buf1))//12April2024 multiple conditions
            // if (smsSend(buf2))//11April2024 commented out either of the three to resolve duplicate sending- two data, battery & water did not disappear
             {
                 spiuart.println("SUCCESS! SMS sent.");
@@ -481,8 +484,8 @@ boolean smsSend(char *msg)
     Serial.print("Node ID: "); //( Single Data - Node ID, 11April2024)
     spiuart.println ("Node ID: ");//( Single Data - Node ID, 11April2024)
     delay(1000);   
-    Serial.print(buf); //(11April2024)
-    spiuart.print(buf); //(11April2024)
+    Serial.print(buf3); //(11April2024)
+    spiuart.print(buf3); //(11April2024)
 
     Serial.print("Water Level: "); //( Single Data - WL, 8April2024)
     spiuart.println ("Water Level: ");//( Single Data - WL, 8April2024)
@@ -497,6 +500,8 @@ boolean smsSend(char *msg)
 
     int y = atof (buf2); //converting char buf1 to float for ThingSpeak access 12April2024
 
+   // y = float (y + 0.00);
+    
 //    float q = y /1.000;
 //    y =  q /1.000;
 
@@ -559,7 +564,8 @@ Serial.flush();
   //String str1="GET https://api.thingspeak.com/update?api_key=43GYIJ1GJN55CBKP&field1=" + String(buf1)+"&field2="+ String(buf2); //11April2024
    //String str="GET https://api.thingspeak.com/update?api_key=43GYIJ1GJN55CBKP&field1=" + String(buf1)+"&field2="+ String(buf2) +"&field3="+ String(buf); 
  
-   String str="GET https://api.thingspeak.com/update?api_key=43GYIJ1GJN55CBKP&field1=" + String(z)+"&field2="+ String(x)+"&field3="+ String(y)+"&field4="+ String(buf);//added char converted x & y in 12 April 2024 did work
+   //String str="GET https://api.thingspeak.com/update?api_key=43GYIJ1GJN55CBKP&field1=" + String(z)+"&field2="+ String(x)+"&field3="+ String(y)+"&field4="+ String(buf);//added char converted x & y in 12 April 2024 did work
+   String str="GET https://api.thingspeak.com/update?api_key=43GYIJ1GJN55CBKP&field1=" + String(x)+"&field2="+ String(y)+"&field3="+ String(buf3); //15April 2024 removed the placement holder z
    Serial.println(str);
    spiuart.println(str);
    delay(4000);
